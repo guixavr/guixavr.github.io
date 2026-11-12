@@ -2,10 +2,11 @@
 
 ## Imagens
 - [ ] **T7 Plus:** print do painel web e/ou do totem, sem dados reais do cliente (capa do card em destaque)
-- [ ] **Capuano Festas:** print do site (capuanofestas.com.br)
-- [ ] **Escola Ruah:** print do site (escolaruah.com.br)
+- [x] **Capuano Festas:** print do site (capuanofestas.com.br)
+- [x] **Escola Ruah:** print do site (escolaruah.com.br)
 - [ ] **Suite IT Digital:** print de algum app (se puder ser divulgado)
-- [ ] **Logos dos clientes** (T7 Adesivos, Suite IT Digital, Capuano Festas, Escola Ruah), se houver permissão de uso
+- [x] **Logos dos clientes:** T7 Adesivos, Capuano Festas e Escola Ruah
+- [ ] **Logo da Suite IT Digital**, se houver permissão de uso
 - [ ] **Foto profissional** (opcional, para a seção Sobre)
 - [ ] **Logo pessoal** (opcional; hoje o site usa o texto `>_ xavr.dev`)
 - [ ] **Imagem de compartilhamento (Open Graph)** para o link aparecer com imagem no WhatsApp/LinkedIn

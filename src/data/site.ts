@@ -24,14 +24,14 @@ export function whatsappLink(lang: Lang) {
   return `https://wa.me/${profile.whatsapp}?text=${encodeURIComponent(msg)}`;
 }
 
-// Clientes exibidos na faixa de logos. Sem logos por enquanto: o nome é
-// renderizado como wordmark. Para usar um logo, adicione `logo: '/clients/x.svg'`
-// e coloque o arquivo em public/clients/.
+// Clientes exibidos na faixa de logos. Sem `logo`, o nome é renderizado como
+// wordmark. Para usar um logo, adicione `logo: '/clients/x.svg'` e coloque o
+// arquivo em public/clients/.
 export const clients: { name: string; logo?: string }[] = [
-  { name: 'T7 Adesivos' },
+  { name: 'T7 Adesivos', logo: '/clients/t7.webp' },
   { name: 'Suite IT Digital' },
-  { name: 'Capuano Festas' },
-  { name: 'Escola Ruah' },
+  { name: 'Capuano Festas', logo: '/clients/capuano.webp' },
+  { name: 'Escola Ruah', logo: '/clients/escola-ruah.svg' },
 ];
 
 // Projetos. `featured: true` aparece em destaque (cards grandes).
@@ -139,6 +139,7 @@ export const projects: Project[] = [
     stack: ['Responsive UI', 'SEO'],
     link: 'https://www.capuanofestas.com.br/',
     linkLabel: { pt: 'Visitar site', en: 'Visit website' },
+    image: '/projects/capuano.webp',
     featured: true,
     hue: 320,
   },
@@ -153,6 +154,7 @@ export const projects: Project[] = [
     stack: ['Responsive UI', 'SEO'],
     link: 'https://www.escolaruah.com.br/',
     linkLabel: { pt: 'Visitar site', en: 'Visit website' },
+    image: '/projects/escola-ruah.webp',
     featured: true,
     hue: 150,
   },
