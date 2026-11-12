@@ -1,0 +1,41 @@
+---
+// Capa gerada para projetos sem imagem: janela de navegador estilizada.
+import type { Project } from '../data/site';
+
+interface Props {
+  project: Project;
+}
+const { project: p } = Astro.props;
+const style = `--h:${p.hue}`;
+---
+
+<div
+  class="relative aspect-[16/10] overflow-hidden rounded-xl border border-line bg-[radial-gradient(120%_90%_at_0%_0%,hsl(var(--h)_70%_55%/.28),transparent_60%),radial-gradient(90%_80%_at_100%_100%,hsl(calc(var(--h)+40)_70%_55%/.18),transparent_60%)] bg-surface-2"
+  style={style}
+>
+  {
+    p.image ? (
+      <img src={p.image} alt={p.name} loading="lazy" class="absolute inset-0 size-full object-cover" />
+    ) : (
+      <div class="absolute inset-x-6 top-6 bottom-0 rounded-t-lg border border-b-0 border-white/10 bg-bg/70 shadow-2xl backdrop-blur transition-transform duration-500 group-hover:-translate-y-1 sm:inset-x-10 sm:top-10">
+        <div class="flex items-center gap-1.5 border-b border-white/10 px-3 py-2.5">
+          <span class="size-2 rounded-full bg-white/15" />
+          <span class="size-2 rounded-full bg-white/15" />
+          <span class="size-2 rounded-full bg-white/15" />
+          <span class="ml-3 h-2 w-28 rounded-full bg-white/10" />
+        </div>
+        <div class="p-5 sm:p-7">
+          <p class="text-2xl font-semibold tracking-tight text-white/90 sm:text-3xl">{p.name}</p>
+          <div class="mt-4 space-y-2">
+            <div class="h-2 w-3/4 rounded-full bg-white/10" />
+            <div class="h-2 w-1/2 rounded-full bg-white/10" />
+          </div>
+          <div class="mt-5 flex gap-2">
+            <span class="h-6 w-20 rounded-full" style="background:hsl(var(--h) 70% 65% / .5)" />
+            <span class="h-6 w-16 rounded-full bg-white/10" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+</div>

@@ -1,0 +1,68 @@
+---
+import type { Lang } from '../data/site';
+import { profile } from '../data/site';
+import { t } from '../i18n/ui';
+import Icon from './Icon.astro';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const d = t(lang).footer;
+const year = new Date().getFullYear();
+
+const socials = [
+  { href: profile.github, label: 'GitHub', icon: 'github' },
+  { href: profile.linkedin, label: 'LinkedIn', icon: 'linkedin' },
+  { href: `mailto:${profile.email}`, label: 'E-mail', icon: 'mail' },
+];
+
+// Páginas dos apps em public/ (endereços usados nas lojas: não mudar)
+const appPages = [
+  { app: 'NoteNow', links: [{ href: '/notenow/privacy/', label: d.privacy }] },
+  {
+    app: 'Gemla',
+    links: [
+      { href: '/gemla/privacy/', label: d.privacy },
+      { href: '/gemla/delete-account/', label: d.deleteAccount },
+    ],
+  },
+];
+---
+
+<footer class="border-t border-line">
+  <nav
+    aria-label={d.apps}
+    class="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-6 gap-y-2 border-b border-line px-5 py-5 text-xs text-subtle sm:justify-start sm:px-8"
+  >
+    <span class="font-mono tracking-[0.2em] uppercase">{d.apps}</span>
+    {appPages.map((a) => (
+      <span>
+        <span class="text-muted">{a.app}</span>
+        {a.links.map((l) => (
+          <>
+            {' · '}
+            <a href={l.href} class="transition-colors hover:text-fg">{l.label}</a>
+          </>
+        ))}
+      </span>
+    ))}
+  </nav>
+  <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 px-5 py-10 text-sm text-subtle sm:flex-row sm:px-8">
+    <p>© {year} {profile.name}. {d.rights}</p>
+    <div class="flex items-center gap-2">
+      {socials.map((s) => (
+        <a
+          href={s.href}
+          target={s.href.startsWith('http') ? '_blank' : undefined}
+          rel="noopener"
+          aria-label={s.label}
+          class="inline-flex size-9 items-center justify-center rounded-full text-muted transition hover:bg-surface hover:text-fg"
+        >
+          <Icon name={s.icon} class="size-[18px]" />
+        </a>
+      ))}
+      <a href="#top" class="ml-2 font-mono text-xs uppercase transition-colors hover:text-fg">{d.backToTop} ↑</a>
+    </div>
+  </div>
+</footer>

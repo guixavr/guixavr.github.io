@@ -1,0 +1,104 @@
+---
+import type { Lang } from '../data/site';
+import { projects } from '../data/site';
+import { t } from '../i18n/ui';
+import Icon from './Icon.astro';
+import ProjectCover from './ProjectCover.astro';
+import SectionHeading from './SectionHeading.astro';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const d = t(lang).work;
+const featured = projects.filter((p) => p.featured);
+const others = projects.filter((p) => !p.featured);
+---
+
+<section id="projetos" class="py-24 sm:py-32">
+  <div class="mx-auto max-w-6xl px-5 sm:px-8">
+    <SectionHeading eyebrow={d.eyebrow} title={d.title} subtitle={d.subtitle} />
+
+    <ul class="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {featured.map((p) => (
+        <li
+          class:list={[
+            'reveal group flex flex-col rounded-2xl border border-line bg-surface p-3 transition-colors hover:border-subtle',
+            p.wide && 'md:col-span-2 lg:col-span-3 lg:grid lg:grid-cols-[1.15fr_1fr] lg:items-center lg:gap-4',
+          ]}
+        >
+          <ProjectCover project={p} />
+          <div class="flex flex-1 flex-col p-5">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <p class="font-mono text-xs text-subtle uppercase">{p.category[lang]}</p>
+                <h3 class="mt-1.5 text-xl font-semibold tracking-tight">{p.name}</h3>
+              </div>
+              {p.link && (
+                <a
+                  href={p.link}
+                  target="_blank"
+                  rel="noopener"
+                  class="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-line text-muted transition hover:border-subtle hover:text-fg"
+                  aria-label={p.linkLabel?.[lang] ?? p.name}
+                >
+                  <Icon name="arrowUpRight" class="size-4" />
+                </a>
+              )}
+            </div>
+            <p class="mt-3 flex-1 text-muted">{p.description[lang]}</p>
+            {p.highlights && (
+              <ul class="mt-5 space-y-2.5 text-sm text-muted">
+                {p.highlights[lang].map((h) => (
+                  <li class="flex gap-3">
+                    <Icon name="check" class="mt-0.5 size-4 shrink-0 text-accent" />
+                    <span>{h}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <ul class="mt-5 flex flex-wrap gap-2">
+              {p.stack.map((s) => (
+                <li class="rounded-full border border-line px-2.5 py-1 font-mono text-[11px] text-muted">{s}</li>
+              ))}
+            </ul>
+          </div>
+        </li>
+      ))}
+    </ul>
+
+    {
+      others.length > 0 && (
+        <div class="mt-16">
+          <h3 class="reveal font-mono text-xs tracking-[0.2em] text-subtle uppercase">{d.more}</h3>
+          <ul class="mt-4 divide-y divide-line border-y border-line">
+            {others.map((p) => {
+              const Tag = p.link ? 'a' : 'div';
+              return (
+                <li class="reveal">
+                  <Tag
+                    {...(p.link ? { href: p.link, target: '_blank', rel: 'noopener' } : {})}
+                    class:list={[
+                      'group grid gap-2 py-6 sm:grid-cols-[12rem_1fr] lg:grid-cols-[13rem_1fr_15rem] sm:items-center sm:gap-8',
+                      p.link && 'cursor-pointer',
+                    ]}
+                  >
+                    <div>
+                      <p class="text-lg font-semibold tracking-tight transition-colors group-hover:text-accent">{p.name}</p>
+                      <p class="font-mono text-xs text-subtle uppercase">{p.category[lang]}</p>
+                    </div>
+                    <p class="text-muted">{p.description[lang]}</p>
+                    <div class="flex items-center gap-3 text-sm text-muted sm:col-start-2 lg:col-start-auto lg:justify-end">
+                      <span class="font-mono text-xs">{p.stack.slice(0, 3).join(' · ')}</span>
+                      {p.link && <Icon name="arrowUpRight" class="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />}
+                    </div>
+                  </Tag>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )
+    }
+  </div>
+</section>
