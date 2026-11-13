@@ -5,3 +5,7 @@ dist/
 .env.*
 .DS_Store
 *.log
+
+# Prospector: leads e chaves ficam só na sua máquina
+tools/prospector/data/
+!tools/prospector/.env.example

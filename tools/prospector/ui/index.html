@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prospector</title>
+<style>
+:root{--bg:#0f1115;--panel:#171a21;--panel2:#1e222b;--line:#2a2f3a;--ink:#e8eaf0;--muted:#9aa1b2;--accent:#5b8cff;--green:#25d366;--warn:#f5b301;--red:#ef5d5d}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.5 Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+a{color:var(--accent)}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 20px;background:rgba(15,17,21,.95);border-bottom:1px solid var(--line)}
+header h1{font-size:16px;margin:0 12px 0 0}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);font-size:12px;color:var(--muted)}
+.chip.ok::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green)}
+.chip.off::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--warn)}
+.spacer{flex:1}
+button,.button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--ink);padding:7px 12px;border-radius:9px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+button:hover,.button:hover{border-color:#3a4150}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.wa,.button.wa{background:var(--green);border-color:var(--green);color:#06210f;font-weight:600}
+button.danger{color:var(--red)}
+button:disabled{opacity:.5;cursor:default}
+main{max-width:1200px;margin:0 auto;padding:20px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+.panel h2{font-size:14px;margin:0 0 12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+input,select,textarea{font:inherit;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:7px 10px}
+textarea{width:100%;min-height:150px;resize:vertical}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.niches{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.niche{padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:12.5px}
+.niche.on{background:rgba(91,140,255,.15);border-color:var(--accent);color:var(--ink)}
+.stats{display:flex;gap:8px;flex-wrap:wrap}
+.stat{padding:8px 12px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);cursor:pointer}
+.stat b{font-size:16px;display:block}.stat span{color:var(--muted);font-size:12px}
+.stat.on{border-color:var(--accent)}
+.leads{display:grid;gap:10px}
+.lead{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;grid-template-columns:56px 1fr auto;gap:14px;align-items:start}
+@media(max-width:820px){.lead{grid-template-columns:48px 1fr}.lead .actions{grid-column:1/-1}}
+.score{width:52px;height:52px;border-radius:12px;display:grid;place-items:center;font-weight:700;font-size:17px;background:var(--panel2)}
+.score.hi{background:rgba(37,211,102,.15);color:var(--green)}.score.mid{background:rgba(245,179,1,.13);color:var(--warn)}
+.lead h3{margin:0;font-size:15px}
+.meta{color:var(--muted);font-size:12.5px;margin-top:2px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{font-size:11.5px;padding:2px 8px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
+.tag.good{color:var(--green);border-color:rgba(37,211,102,.4)}
+.tag.warn{color:var(--warn);border-color:rgba(245,179,1,.4)}
+.tag.status{color:var(--ink)}
+.actions{display:flex;flex-direction:column;gap:6px;align-items:stretch;min-width:190px}
+.actions .row{gap:6px}
+.notes{margin-top:8px;width:100%;min-height:34px;font-size:12.5px}
+.empty{color:var(--muted);text-align:center;padding:40px}
+dialog{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:20px;width:min(640px,92vw)}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+dialog h3{margin:0 0 6px}
+label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+label input,label select{width:100%}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);padding:10px 16px;border-radius:10px;z-index:50;max-width:90vw}
+.toast.err{border-color:var(--red)}
+.hint{color:var(--muted);font-size:12.5px;margin:6px 0 0}
+details summary{cursor:pointer;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Prospector</h1>
+  <span id="chipPlaces" class="chip">Google Places</span>
+  <span id="chipAI" class="chip">Claude</span>
+  <span class="spacer"></span>
+  <button id="btnPublish" class="primary" hidden>Publicar prévias</button>
+  <button id="btnSettings">Configurações</button>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>Buscar negócios</h2>
+    <div class="row">
+      <input id="city" placeholder="Cidade (ex.: Campinas, SP)" style="flex:1;min-width:220px">
+      <input id="customNiche" placeholder="Outro nicho (Enter para adicionar)" style="min-width:220px">
+      <select id="pages" title="Resultados por nicho">
+        <option value="1">20 por nicho</option>
+        <option value="2">40 por nicho</option>
+        <option value="3">60 por nicho</option>
+      </select>
+      <button id="btnSearch" class="primary">Buscar leads</button>
+    </div>
+    <div class="row" style="margin-top:10px;gap:6px">
+      <button id="selAll" style="font-size:12px;padding:4px 10px">Marcar todos</button>
+      <button id="selNone" style="font-size:12px;padding:4px 10px">Limpar</button>
+      <span class="hint" id="nicheCount"></span>
+    </div>
+    <div class="niches" id="niches"></div>
+    <details>
+      <summary>Adicionar negócio manualmente (ex.: achou no Instagram)</summary>
+      <form id="manualForm" class="grid2" style="margin-top:8px">
+        <label>Nome<input name="name" required></label>
+        <label>WhatsApp / telefone<input name="phone" placeholder="(11) 98765-4321"></label>
+        <label>Segmento<input name="category" placeholder="Barbearia"></label>
+        <label>Endereço<input name="address" placeholder="Rua X, 123 - Bairro, Cidade - SP"></label>
+        <label>Site ou Instagram atual<input name="website"></label>
+        <label>Nota no Google (opcional)<input name="rating" placeholder="4,8"></label>
+        <label style="grid-column:1/-1">Observações para a prévia<input name="notes" placeholder="Ex.: atende só com hora marcada, foco em corte masculino"></label>
+        <div style="grid-column:1/-1;margin-top:10px"><button class="primary">Adicionar</button></div>
+      </form>
+    </details>
+  </section>
+
+  <section class="panel">
+    <div class="row" style="justify-content:space-between">
+      <div class="stats" id="stats"></div>
+      <div class="row">
+        <select id="fSite">
+          <option value="">Todos os sites</option>
+          <option value="precisa" selected>Sem site ou só rede social</option>
+          <option value="sem_site">Sem site</option>
+          <option value="so_rede_social">Só rede social</option>
+          <option value="tem_site">Tem site</option>
+        </select>
+        <label style="margin:0;display:flex;gap:6px;align-items:center;color:var(--ink);font-size:13px"><input type="checkbox" id="fMobile" checked> Só celular</label>
+        <input id="fText" placeholder="Filtrar por nome/cidade" style="width:180px">
+      </div>
+    </div>
+  </section>
+
+  <div class="leads" id="leads"></div>
+</main>
+
+<dialog id="sendDlg">
+  <h3 id="sendTitle">Enviar mensagem</h3>
+  <p class="hint" id="sendHint"></p>
+  <textarea id="sendText"></textarea>
+  <p class="hint">O WhatsApp abre com o texto pronto. Revise e aperte enviar você mesmo: mandar um por um, com calma, evita bloqueio do número.</p>
+  <div class="row" style="justify-content:flex-end;margin-top:12px">
+    <button id="sendCancel">Cancelar</button>
+    <button id="sendGo" class="wa">Abrir no WhatsApp</button>
+  </div>
+</dialog>
+
+<dialog id="settingsDlg">
+  <h3>Configurações</h3>
+  <form id="settingsForm">
+    <div class="grid2">
+      <label>Seu nome<input name="name"></label>
+      <label>Marca<input name="brand"></label>
+      <label>Seu WhatsApp (com 55 e DDD)<input name="whatsapp"></label>
+      <label>Endereço do site (onde ficam as prévias)<input name="siteUrl"></label>
+      <label>Dias até o follow-up<input name="followUpDays" type="number" min="1"></label>
+      <label>Condições de pagamento<input name="paymentTerms"></label>
+    </div>
+    <label>Pacotes (JSON)</label>
+    <textarea name="packages" style="min-height:200px;font-family:ui-monospace,monospace;font-size:12px"></textarea>
+    <label>Mensalidade (JSON, ou vazio para não mostrar)</label>
+    <textarea name="monthly" style="min-height:80px;font-family:ui-monospace,monospace;font-size:12px"></textarea>
+    <p class="hint">Mudanças nos pacotes valem para as próximas prévias. Para atualizar uma proposta já criada, clique em "Refazer prévia".</p>
+    <div class="row" style="justify-content:flex-end;margin-top:12px">
+      <button type="button" id="settingsCancel">Cancelar</button>
+      <button class="primary">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let state = { leads: [], settings: {}, niches: [], statuses: [] };
+let selectedNiches = new Set(JSON.parse(localStorageGet('niches') || '[]'));
+let statusFilter = 'ativos';
+
+function localStorageGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
+function localStorageSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
+
+const STATUS_LABEL = { novo: 'Novo', pronto: 'Prévia pronta', enviado: 'Enviado', respondeu: 'Respondeu', proposta: 'Proposta enviada', fechado: 'Fechado', perdido: 'Perdido', nao_contatar: 'Não contatar' };
+const SITE_LABEL = { sem_site: 'Sem site', so_rede_social: 'Só rede social', tem_site: 'Tem site' };
+
+async function api(method, url, body) {
+  const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || res.statusText);
+  return data;
+}
+
+function toast(msg, err) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (err ? ' err' : '');
+  el.textContent = msg;
+  document.body.append(el);
+  setTimeout(() => el.remove(), err ? 7000 : 3500);
+}
+
+async function refresh() {
+  state = await api('GET', '/api/state');
+  $('#chipPlaces').className = 'chip ' + (state.hasPlaces ? 'ok' : 'off');
+  $('#chipPlaces').title = state.hasPlaces ? 'Chave configurada' : 'Sem GOOGLE_PLACES_API_KEY no .env: só cadastro manual';
+  $('#chipAI').className = 'chip ' + (state.hasAI ? 'ok' : 'off');
+  $('#chipAI').title = state.hasAI ? 'Chave configurada' : 'Sem ANTHROPIC_API_KEY no .env: usa textos-modelo';
+  $('#btnPublish').hidden = !state.pendingPublish;
+  renderNiches();
+  renderLeads();
+}
+
+function renderNiches() {
+  $('#niches').innerHTML = [...new Set([...state.niches, ...selectedNiches])]
+    .map((n) => `<button class="niche ${selectedNiches.has(n) ? 'on' : ''}" data-n="${esc(n)}">${esc(n)}</button>`).join('');
+  $('#nicheCount').textContent = selectedNiches.size ? `${selectedNiches.size} nicho(s) marcados` : 'Marque os nichos que quer buscar';
+}
+
+$('#niches').addEventListener('click', (e) => {
+  const n = e.target.dataset?.n; if (!n) return;
+  selectedNiches.has(n) ? selectedNiches.delete(n) : selectedNiches.add(n);
+  localStorageSet('niches', JSON.stringify([...selectedNiches]));
+  renderNiches();
+});
+$('#selAll').onclick = () => { state.niches.forEach((n) => selectedNiches.add(n)); localStorageSet('niches', JSON.stringify([...selectedNiches])); renderNiches(); };
+$('#selNone').onclick = () => { selectedNiches.clear(); localStorageSet('niches', '[]'); renderNiches(); };
+$('#customNiche').addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' || !e.target.value.trim()) return;
+  selectedNiches.add(e.target.value.trim()); e.target.value = '';
+  localStorageSet('niches', JSON.stringify([...selectedNiches])); renderNiches();
+});
+$('#city').value = localStorageGet('city') || '';
+
+$('#btnSearch').onclick = async () => {
+  const city = $('#city').value.trim();
+  if (!city) return toast('Informe a cidade.', true);
+  if (!selectedNiches.size) return toast('Marque pelo menos um nicho.', true);
+  localStorageSet('city', city);
+  const btn = $('#btnSearch'); btn.disabled = true; btn.textContent = `Buscando ${selectedNiches.size} nicho(s)…`;
+  try {
+    const r = await api('POST', '/api/search', { city, niches: [...selectedNiches], pages: $('#pages').value });
+    toast(`${r.found} negócios encontrados, ${r.added} novos.`);
+    if (r.errors.length) toast(r.errors.join(' | '), true);
+    await refresh();
+  } catch (e) { toast(e.message, true); }
+  btn.disabled = false; btn.textContent = 'Buscar leads';
+};
+
+$('#manualForm').onsubmit = async (e) => {
+  e.preventDefault();
+  try {
+    await api('POST', '/api/leads', Object.fromEntries(new FormData(e.target)));
+    e.target.reset(); toast('Negócio adicionado.'); refresh();
+  } catch (err) { toast(err.message, true); }
+};
+
+['#fSite', '#fMobile', '#fText'].forEach((s) => $(s).addEventListener('input', renderLeads));
+
+function isFollowUpDue(l) { return l.status === 'enviado' && l.followUpAt && new Date(l.followUpAt) <= new Date(); }
+
+function filtered() {
+  const site = $('#fSite').value, mobile = $('#fMobile').checked, text = $('#fText').value.toLowerCase();
+  return state.leads.filter((l) => {
+    if (statusFilter === 'ativos' && ['perdido', 'nao_contatar', 'fechado'].includes(l.status)) return false;
+    if (statusFilter === 'followup' && !isFollowUpDue(l)) return false;
+    if (!['ativos', 'followup', 'todos'].includes(statusFilter) && l.status !== statusFilter) return false;
+    if (site === 'precisa' && l.websiteKind === 'tem_site') return false;
+    if (site && site !== 'precisa' && l.websiteKind !== site) return false;
+    if (mobile && !(l.phone && l.phone.length === 13 && l.phone[4] === '9')) return false;
+    if (text && !(`${l.name} ${l.address} ${l.category}`.toLowerCase().includes(text))) return false;
+    return true;
+  }).sort((a, b) => (isFollowUpDue(b) - isFollowUpDue(a)) || (b.score - a.score));
+}
+
+function renderStats() {
+  const count = (fn) => state.leads.filter(fn).length;
+  const items = [
+    ['ativos', 'Em aberto', count((l) => !['perdido', 'nao_contatar', 'fechado'].includes(l.status))],
+    ['followup', 'Follow-up hoje', count(isFollowUpDue)],
+    ...state.statuses.map((s) => [s, STATUS_LABEL[s], count((l) => l.status === s)]),
+    ['todos', 'Todos', state.leads.length],
+  ];
+  $('#stats').innerHTML = items.map(([k, label, n]) => `<div class="stat ${statusFilter === k ? 'on' : ''}" data-k="${k}"><b>${n}</b><span>${label}</span></div>`).join('');
+}
+$('#stats').addEventListener('click', (e) => { const k = e.target.closest('.stat')?.dataset.k; if (k) { statusFilter = k; renderLeads(); } });
+
+function previewUrl(l, sub = '') { return `${state.settings.siteUrl.replace(/\/$/, '')}/preview/${l.slug}/${sub}`; }
+
+function renderLeads() {
+  renderStats();
+  const list = filtered();
+  if (!list.length) {
+    $('#leads').innerHTML = `<div class="empty">${state.leads.length ? 'Nenhum lead com esses filtros.' : 'Nenhum lead ainda. Escolha a cidade e os nichos acima e clique em "Buscar leads".'}</div>`;
+    return;
+  }
+  $('#leads').innerHTML = list.map((l) => {
+    const cls = l.score >= 70 ? 'hi' : l.score >= 45 ? 'mid' : '';
+    const due = isFollowUpDue(l);
+    const unpublished = l.slug && !l.publishedAt;
+    return `<article class="lead" data-id="${esc(l.id)}">
+      <div class="score ${cls}" title="${esc((l.reasons || []).join(', '))}">${l.score}</div>
+      <div>
+        <h3>${esc(l.name)}</h3>
+        <div class="meta">${esc(l.category)}${l.category ? ' · ' : ''}${esc(l.shortAddress || l.address)}</div>
+        <div class="meta">${l.phone ? esc(formatPhone(l.phone)) : 'sem telefone'}${l.rating ? ` · ★ ${l.rating} (${l.reviewCount})` : ''}${l.mapsUrl ? ` · <a href="${esc(l.mapsUrl)}" target="_blank" rel="noopener">Maps</a>` : ''}${l.website ? ` · <a href="${esc(l.website)}" target="_blank" rel="noopener">site atual</a>` : ''}</div>
+        <div class="tags">
+          <span class="tag status">${STATUS_LABEL[l.status] || l.status}</span>
+          <span class="tag ${l.websiteKind === 'tem_site' ? '' : 'good'}">${SITE_LABEL[l.websiteKind] || ''}</span>
+          ${due ? '<span class="tag warn">Follow-up hoje</span>' : ''}
+          ${unpublished ? '<span class="tag warn">Prévia não publicada</span>' : ''}
+          ${l.content?.generatedBy ? `<span class="tag">${l.content.generatedBy === 'modelo-padrao' ? 'texto-modelo' : 'texto por IA'}</span>` : ''}
+        </div>
+        <textarea class="notes" data-act="notes" placeholder="Anotações (vão para a IA ao gerar a prévia)">${esc(l.notes || '')}</textarea>
+      </div>
+      <div class="actions">
+        ${l.slug ? `<div class="row"><a class="button" href="/preview/${esc(l.slug)}/" target="_blank">Ver prévia</a><a class="button" href="/preview/${esc(l.slug)}/proposta/" target="_blank">Proposta</a></div>` : ''}
+        <button data-act="generate" ${l.status === 'nao_contatar' ? 'disabled' : ''}>${l.slug ? 'Refazer prévia' : 'Gerar prévia'}</button>
+        ${l.slug && l.phone && l.status !== 'nao_contatar' ? `
+          <button class="wa" data-act="send-first">${l.sentAt ? 'Reenviar 1ª mensagem' : 'Enviar prévia'}</button>
+          ${l.sentAt ? '<button data-act="send-followup">Follow-up</button>' : ''}
+          <button data-act="send-proposal">Enviar proposta</button>` : ''}
+        <select data-act="status">${state.statuses.map((s) => `<option value="${s}" ${s === l.status ? 'selected' : ''}>${STATUS_LABEL[s]}</option>`).join('')}</select>
+        <button class="danger" data-act="delete">Excluir</button>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+function formatPhone(n) {
+  const ddd = n.slice(2, 4), r = n.slice(4);
+  return r.length === 9 ? `(${ddd}) ${r.slice(0, 5)}-${r.slice(5)}` : `(${ddd}) ${r.slice(0, 4)}-${r.slice(4)}`;
+}
+
+let sending = null;
+function openSend(l, kind) {
+  const templates = { first: l.message, followup: l.followUpMessage, proposal: l.proposalMessage };
+  const text = (templates[kind] || '')
+    .replaceAll('{{PREVIEW_URL}}', previewUrl(l))
+    .replaceAll('{{PROPOSAL_URL}}', previewUrl(l, 'proposta/'));
+  sending = { l, kind };
+  $('#sendTitle').textContent = { first: 'Enviar prévia', followup: 'Follow-up', proposal: 'Enviar proposta' }[kind] + ` · ${l.name}`;
+  $('#sendHint').innerHTML = l.publishedAt ? `Para ${esc(formatPhone(l.phone))}` : '<span style="color:var(--warn)">Atenção: esta prévia ainda não foi publicada. Clique em "Publicar prévias" antes, senão o link não abre para o cliente.</span>';
+  $('#sendText').value = text;
+  $('#sendDlg').showModal();
+}
+$('#sendCancel').onclick = () => $('#sendDlg').close();
+$('#sendGo').onclick = async () => {
+  const { l, kind } = sending;
+  window.open(`https://wa.me/${l.phone}?text=${encodeURIComponent($('#sendText').value)}`, '_blank', 'noopener');
+  $('#sendDlg').close();
+  await api('POST', `/api/leads/${encodeURIComponent(l.id)}/sent`, { kind });
+  refresh();
+};
+
+$('#leads').addEventListener('click', async (e) => {
+  const act = e.target.dataset?.act; if (!act || act === 'status' || act === 'notes') return;
+  const id = e.target.closest('.lead').dataset.id;
+  const l = state.leads.find((x) => x.id === id);
+  try {
+    if (act === 'generate') {
+      e.target.disabled = true; e.target.textContent = 'Gerando…';
+      await api('POST', `/api/leads/${encodeURIComponent(id)}/generate`);
+      toast('Prévia gerada. Confira em "Ver prévia".');
+      await refresh();
+    } else if (act === 'send-first') openSend(l, 'first');
+    else if (act === 'send-followup') openSend(l, 'followup');
+    else if (act === 'send-proposal') openSend(l, 'proposal');
+    else if (act === 'delete') {
+      if (!confirm(`Excluir ${l.name}? A prévia local também é apagada.\nDica: se a pessoa pediu para não receber mensagens, use o status "Não contatar" em vez de excluir, assim ela não volta numa nova busca.`)) return;
+      await api('DELETE', `/api/leads/${encodeURIComponent(id)}`); refresh();
+    }
+  } catch (err) { toast(err.message, true); refresh(); }
+});
+
+$('#leads').addEventListener('change', async (e) => {
+  const id = e.target.closest('.lead')?.dataset.id; if (!id) return;
+  if (e.target.dataset.act === 'status') { await api('PATCH', `/api/leads/${encodeURIComponent(id)}`, { status: e.target.value }); refresh(); }
+  if (e.target.dataset.act === 'notes') { await api('PATCH', `/api/leads/${encodeURIComponent(id)}`, { notes: e.target.value }); toast('Anotação salva.'); }
+});
+
+$('#btnPublish').onclick = async () => {
+  if (!confirm('Publicar as prévias no GitHub Pages? Isso faz commit e push só da pasta public/preview.')) return;
+  const btn = $('#btnPublish'); btn.disabled = true; btn.textContent = 'Publicando…';
+  try { toast((await api('POST', '/api/publish')).message); } catch (e) { toast(e.message, true); }
+  btn.disabled = false; btn.textContent = 'Publicar prévias'; refresh();
+};
+
+$('#btnSettings').onclick = () => {
+  const f = $('#settingsForm'), s = state.settings;
+  for (const k of ['name', 'brand', 'whatsapp', 'siteUrl', 'followUpDays', 'paymentTerms']) f[k].value = s[k] ?? '';
+  f.packages.value = JSON.stringify(s.packages, null, 2);
+  f.monthly.value = s.monthly ? JSON.stringify(s.monthly, null, 2) : '';
+  $('#settingsDlg').showModal();
+};
+$('#settingsCancel').onclick = () => $('#settingsDlg').close();
+$('#settingsForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const f = e.target;
+  try {
+    const body = Object.fromEntries(['name', 'brand', 'whatsapp', 'siteUrl', 'paymentTerms'].map((k) => [k, f[k].value.trim()]));
+    body.whatsapp = body.whatsapp.replace(/\D/g, '');
+    body.followUpDays = Number(f.followUpDays.value) || 3;
+    body.packages = JSON.parse(f.packages.value);
+    body.monthly = f.monthly.value.trim() ? JSON.parse(f.monthly.value) : null;
+    await api('POST', '/api/settings', body);
+    $('#settingsDlg').close(); toast('Configurações salvas.'); refresh();
+  } catch (err) { toast('Erro: ' + err.message, true); }
+};
+
+refresh();
+</script>
+</body>
+</html>
