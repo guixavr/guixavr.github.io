@@ -29,7 +29,7 @@ export function whatsappLink(lang: Lang) {
 // arquivo em public/clients/.
 export const clients: { name: string; logo?: string }[] = [
   { name: 'T7 Adesivos', logo: '/clients/t7.webp' },
-  { name: 'Suite IT Digital' },
+  { name: 'Suite IT Digital', logo: '/clients/suite-it.png' },
   { name: 'Capuano Festas', logo: '/clients/capuano.webp' },
   { name: 'Escola Ruah', logo: '/clients/escola-ruah.svg' },
 ];
@@ -52,6 +52,8 @@ export type Project = {
   hue: number;
   // Imagem opcional da capa, ex.: '/projects/t7.webp' (em public/projects/)
   image?: string;
+  // Ícone do app (quadrado), mostrado na lista de projetos menores
+  icon?: string;
 };
 
 export const projects: Project[] = [
@@ -169,6 +171,7 @@ export const projects: Project[] = [
     stack: ['Flutter', 'Dart', 'AdMob'],
     link: 'https://play.google.com/store/apps/details?id=notenow.app',
     linkLabel: { pt: 'Ver na Google Play', en: 'View on Google Play' },
+    icon: '/projects/notenow-icon.webp',
     hue: 40,
   },
   {
@@ -180,6 +183,7 @@ export const projects: Project[] = [
       en: 'Block puzzle game with levels, a daily challenge with a player leaderboard, cloud-synced progress and Google sign-in.',
     },
     stack: ['Firebase', 'Google Sign-In', 'AdMob'],
+    icon: '/projects/gemla-icon.webp',
     hue: 290,
   },
 ];

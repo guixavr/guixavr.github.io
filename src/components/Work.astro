@@ -79,13 +79,18 @@ const others = projects.filter((p) => !p.featured);
                   <Tag
                     {...(p.link ? { href: p.link, target: '_blank', rel: 'noopener' } : {})}
                     class:list={[
-                      'group grid gap-2 py-6 sm:grid-cols-[12rem_1fr] lg:grid-cols-[13rem_1fr_15rem] sm:items-center sm:gap-8',
+                      'group grid gap-2 py-6 sm:grid-cols-[15rem_1fr] lg:grid-cols-[16rem_1fr_15rem] sm:items-center sm:gap-8',
                       p.link && 'cursor-pointer',
                     ]}
                   >
-                    <div>
-                      <p class="text-lg font-semibold tracking-tight transition-colors group-hover:text-accent">{p.name}</p>
-                      <p class="font-mono text-xs text-subtle uppercase">{p.category[lang]}</p>
+                    <div class="flex items-center gap-4">
+                      {p.icon && (
+                        <img src={p.icon} alt="" width="48" height="48" loading="lazy" class="size-12 shrink-0 rounded-xl border border-line" />
+                      )}
+                      <div>
+                        <p class="text-lg font-semibold tracking-tight transition-colors group-hover:text-accent">{p.name}</p>
+                        <p class="font-mono text-xs text-subtle uppercase">{p.category[lang]}</p>
+                      </div>
                     </div>
                     <p class="text-muted">{p.description[lang]}</p>
                     <div class="flex items-center gap-3 text-sm text-muted sm:col-start-2 lg:col-start-auto lg:justify-end">
