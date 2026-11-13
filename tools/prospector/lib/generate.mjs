@@ -4,10 +4,10 @@ import Anthropic from '@anthropic-ai/sdk';
 import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod';
 import * as z from 'zod/v4';
 
-export const THEMES = ['saude', 'beleza', 'servicos', 'alimentacao', 'juridico', 'educacao', 'pet', 'fitness', 'automotivo', 'casa'];
+export const THEMES = ['saude', 'beleza', 'masculino', 'servicos', 'alimentacao', 'juridico', 'educacao', 'pet', 'fitness', 'automotivo', 'casa'];
 
 const Content = z.object({
-  theme: z.enum(THEMES).describe('Segmento visual mais próximo do negócio'),
+  theme: z.enum(THEMES).describe('Segmento visual mais próximo do negócio. "beleza" é para salões e estética com público feminino; "masculino" é para barbearias e negócios de público masculino'),
   headline: z.string().describe('Título principal, até 8 palavras, focado no benefício para o cliente final'),
   subheadline: z.string().describe('Uma ou duas frases que completam o título, citando a cidade/bairro'),
   ctaLabel: z.string().describe('Texto do botão principal, ex.: "Agendar pelo WhatsApp"'),
@@ -37,6 +37,7 @@ Regras para as mensagens de WhatsApp (escritas em nome do freelancer, na primeir
 - A primeira mensagem termina com uma linha dizendo que, se não tiver interesse, é só avisar que ele não manda mais mensagens.
 - A mensagem de proposta usa o marcador {{PROPOSAL_URL}} exatamente assim.
 - Não cite valores nas mensagens; eles ficam na página de proposta.
+- Não invente nada sobre o freelancer (cidade onde mora, anos de experiência, clientes). Use só o nome e a marca informados.
 - Assine com o primeiro nome do freelancer.`;
 
 let client;
@@ -86,7 +87,7 @@ export async function generateContent(lead, details, settings) {
 
 const THEME_HINTS = [
   ['saude', /dent|odonto|clínic|clinic|fisio|psic|nutri|médic|medic|saúde|saude|doctor|dentist|physio/i],
-  ['automotivo', /barbe/i],
+  ['masculino', /barbe/i],
   ['beleza', /beleza|salão|salao|estética|estetica|manicure|sobrancelha|cabel|beauty|hair|nail|spa/i],
   ['pet', /pet|veterin|vet|animal/i],
   ['fitness', /academia|pilates|personal|crossfit|gym|fitness|yoga/i],

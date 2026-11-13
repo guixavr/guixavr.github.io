@@ -6,7 +6,7 @@ Roda só no seu computador: as chaves de API e a lista de leads (`data/db.json`)
 
 ## Como funciona
 
-1. **Buscar**: você escolhe a cidade e os nichos. A ferramenta consulta a Google Places API e dá uma nota de 0 a 100 para cada negócio:
+1. **Buscar**: você escolhe a cidade e os nichos. A ferramenta consulta o OpenStreetMap (grátis, sem chave) ou, se você configurar a chave, a Google Places API. Cada negócio recebe uma nota de 0 a 100:
    - pontua mais quem não tem site ou só tem Instagram/Linktree;
    - pontua mais nota alta e muitas avaliações (negócio ativo);
    - pontua mais quem tem celular (provável WhatsApp).
@@ -32,13 +32,21 @@ cp .env.example .env   # e preencha as chaves
 npm start              # abre em http://localhost:4400
 ```
 
+### Fonte da busca
+
+- **Sem chave do Google (padrão)**: usa o OpenStreetMap, gratuito e sem cadastro.
+  - Traz nome, telefone, endereço, horário e se o negócio tem site.
+  - Tem menos negócios que o Google e não tem nota nem avaliações. Use o link "conferir no Google" de cada lead para ver a reputação antes de abordar.
+  - Os servidores são públicos e voluntários: a ferramenta faz uma busca por nicho, com pausa entre elas. Evite buscar dezenas de nichos várias vezes seguidas.
+- **Com chave do Google**: a busca passa a usar a Google Places API automaticamente, com notas, avaliações e fotos.
+
 ### Chaves
 
-- **Google Places API**:
+- **Google Places API (opcional)**:
   1. No [Google Cloud Console](https://console.cloud.google.com/), crie um projeto e ative a **Places API (New)**.
   2. Crie uma chave em *APIs e serviços → Credenciais* e restrinja a chave a essa API.
   3. A busca pede telefone e site, que ficam na faixa de preço mais alta da API. Confira a cota gratuita mensal na página de preços do Google e coloque um limite de orçamento no projeto.
-  4. Sem essa chave, dá para usar só o cadastro manual.
+  4. No Brasil, contas novas podem precisar de um pré-pagamento, que vira crédito.
 - **Claude (Anthropic API)**:
   1. Crie a chave em [platform.claude.com](https://platform.claude.com/).
   2. Cada prévia custa poucos centavos.
@@ -58,6 +66,7 @@ No botão **Configurações** do painel:
 |---|---|
 | `server.mjs` | Servidor local e rotas da API |
 | `ui/index.html` | Painel |
+| `lib/osm.mjs` | Busca gratuita no OpenStreetMap |
 | `lib/places.mjs` | Busca no Google Places |
 | `lib/score.mjs` | Classificação do site atual e nota do lead |
 | `lib/generate.mjs` | Textos da prévia e mensagens, com Claude ou textos-modelo |

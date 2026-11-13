@@ -6,6 +6,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const PALETTES = {
   saude:       { accent: '#0e7c86', soft: '#e3f4f5', ink: '#0f2a2e', display: 'Fraunces' },
   beleza:      { accent: '#b0466b', soft: '#fbe9ef', ink: '#2e1620', display: 'Playfair Display' },
+  masculino:   { accent: '#a87a32', soft: '#f2ece2', ink: '#151412', display: 'Playfair Display' },
   servicos:    { accent: '#2f5bd3', soft: '#e8eefc', ink: '#141c33', display: 'Manrope' },
   alimentacao: { accent: '#c2410c', soft: '#fdeee4', ink: '#2b160b', display: 'Fraunces' },
   juridico:    { accent: '#8a6a2f', soft: '#f5efe3', ink: '#1c1a16', display: 'Playfair Display' },

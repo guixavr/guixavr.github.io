@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT, STATUSES, store } from './lib/store.mjs';
 import { SUGGESTED_NICHES, placeDetails, searchText } from './lib/places.mjs';
+import { searchOSM } from './lib/osm.mjs';
 import { normalizePhone } from './lib/phone.mjs';
 import { classifyWebsite, scoreLead } from './lib/score.mjs';
 import { generateContent, hasAI } from './lib/generate.mjs';
@@ -34,22 +35,31 @@ route('POST', /^\/api\/search$/, async (_m, body) => {
   const pages = Math.min(3, Math.max(1, Number(body.pages) || 1));
   if (!niches.length || !city) throw httpError(400, 'Informe pelo menos um nicho e a cidade.');
 
+  // Com chave do Google usa o Places; sem chave, o OpenStreetMap (grátis).
+  const useGoogle = hasPlaces();
   let found = 0, added = 0;
   const errors = [];
-  for (const niche of niches) {
-    try {
-      const results = await searchText(`${niche} em ${city}`, { maxPages: pages });
-      for (const lead of results) {
-        found++;
-        if (store.upsertFound(lead).isNew) added++;
-      }
-    } catch (e) {
-      errors.push(`${niche}: ${e.message}`);
-      if (/GOOGLE_PLACES_API_KEY|403|401/.test(e.message)) break;
+  const addAll = (results) => {
+    for (const lead of results) {
+      found++;
+      if (store.upsertFound(lead).isNew) added++;
     }
+  };
+  if (useGoogle) {
+    for (const niche of niches) {
+      try {
+        addAll(await searchText(`${niche} em ${city}`, { maxPages: pages }));
+      } catch (e) {
+        errors.push(`${niche}: ${e.message}`);
+        if (/GOOGLE_PLACES_API_KEY|403|401/.test(e.message)) break;
+      }
+    }
+  } else {
+    // OpenStreetMap: uma única consulta com todos os nichos.
+    try { addAll(await searchOSM(niches, city)); } catch (e) { errors.push(e.message); }
   }
   store.save();
-  return { found, added, errors };
+  return { found, added, errors, source: useGoogle ? 'google' : 'osm' };
 });
 
 route('POST', /^\/api\/leads$/, async (_m, body) => {
@@ -110,6 +120,8 @@ route('POST', /^\/api\/leads\/([^/]+)\/generate$/, async ([, id]) => {
   let details = { summary: '', hours: [], reviews: [], photos: [] };
   if (lead.source === 'google' && hasPlaces()) {
     try { details = await placeDetails(lead.id); } catch (e) { console.warn('Detalhes indisponíveis:', e.message); }
+  } else if (lead.hours) {
+    details.hours = osmHoursToText(lead.hours);
   }
   const settings = store.settings();
   const content = { ...(await generateContent(lead, details, settings)), photos: details.photos, reviews: details.reviews, hours: details.hours };
@@ -163,6 +175,19 @@ route('POST', /^\/api\/publish$/, async () => {
   }
   return result;
 });
+
+// "Mo-Fr 09:00-18:00; Sa 09:00-13:00" -> ["Seg a Sex: 09:00-18:00", "Sáb: 09:00-13:00"]
+function osmHoursToText(raw) {
+  const days = { Mo: 'Seg', Tu: 'Ter', We: 'Qua', Th: 'Qui', Fr: 'Sex', Sa: 'Sáb', Su: 'Dom', PH: 'Feriados' };
+  if (String(raw).trim() === '24/7') return ['Todos os dias: 24 horas'];
+  return String(raw).split(';').map((part) => part.trim()).filter(Boolean).map((part) => {
+    if (/^\d/.test(part)) return `Todos os dias: ${part.replace(/,/g, ', ')}`;
+    const m = part.match(/^([A-Za-z,\- ]+?)\s+(.+)$/);
+    if (!m || !/^(Mo|Tu|We|Th|Fr|Sa|Su|PH)/.test(m[1])) return part;
+    const label = m[1].replace(/\b(Mo|Tu|We|Th|Fr|Sa|Su|PH)\b/g, (d) => days[d]).replace(/-/g, ' a ').replace(/,/g, ', ');
+    return `${label}: ${m[2].replace(/\boff\b/, 'fechado').replace(/,/g, ', ')}`;
+  });
+}
 
 // ---------- HTTP ----------
 

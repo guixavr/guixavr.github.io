@@ -190,8 +190,10 @@ function toast(msg, err) {
 
 async function refresh() {
   state = await api('GET', '/api/state');
-  $('#chipPlaces').className = 'chip ' + (state.hasPlaces ? 'ok' : 'off');
-  $('#chipPlaces').title = state.hasPlaces ? 'Chave configurada' : 'Sem GOOGLE_PLACES_API_KEY no .env: só cadastro manual';
+  $('#chipPlaces').className = 'chip ok';
+  $('#chipPlaces').textContent = state.hasPlaces ? 'Busca: Google Places' : 'Busca: OpenStreetMap (grátis)';
+  $('#chipPlaces').title = state.hasPlaces ? 'Chave do Google configurada' : 'Sem chave do Google: usa o OpenStreetMap, que é gratuito mas tem menos negócios e não tem notas';
+  $('#pages').hidden = !state.hasPlaces;
   $('#chipAI').className = 'chip ' + (state.hasAI ? 'ok' : 'off');
   $('#chipAI').title = state.hasAI ? 'Chave configurada' : 'Sem ANTHROPIC_API_KEY no .env: usa textos-modelo';
   $('#btnPublish').hidden = !state.pendingPublish;
@@ -228,7 +230,7 @@ $('#btnSearch').onclick = async () => {
   const btn = $('#btnSearch'); btn.disabled = true; btn.textContent = `Buscando ${selectedNiches.size} nicho(s)…`;
   try {
     const r = await api('POST', '/api/search', { city, niches: [...selectedNiches], pages: $('#pages').value });
-    toast(`${r.found} negócios encontrados, ${r.added} novos.`);
+    toast(`${r.found} negócios encontrados, ${r.added} novos.${r.source === 'osm' && r.found ? ' Os filtros abaixo escondem quem tem site ou não tem celular.' : ''}`);
     if (r.errors.length) toast(r.errors.join(' | '), true);
     await refresh();
   } catch (e) { toast(e.message, true); }
@@ -279,7 +281,7 @@ function renderLeads() {
   renderStats();
   const list = filtered();
   if (!list.length) {
-    $('#leads').innerHTML = `<div class="empty">${state.leads.length ? 'Nenhum lead com esses filtros.' : 'Nenhum lead ainda. Escolha a cidade e os nichos acima e clique em "Buscar leads".'}</div>`;
+    $('#leads').innerHTML = `<div class="empty">${state.leads.length ? 'Nenhum lead com esses filtros. Tente desmarcar "Só celular" ou trocar o filtro de site.' :'Nenhum lead ainda. Escolha a cidade e os nichos acima e clique em "Buscar leads".'}</div>`;
     return;
   }
   $('#leads').innerHTML = list.map((l) => {
@@ -291,7 +293,7 @@ function renderLeads() {
       <div>
         <h3>${esc(l.name)}</h3>
         <div class="meta">${esc(l.category)}${l.category ? ' · ' : ''}${esc(l.shortAddress || l.address)}</div>
-        <div class="meta">${l.phone ? esc(formatPhone(l.phone)) : 'sem telefone'}${l.rating ? ` · ★ ${l.rating} (${l.reviewCount})` : ''}${l.mapsUrl ? ` · <a href="${esc(l.mapsUrl)}" target="_blank" rel="noopener">Maps</a>` : ''}${l.website ? ` · <a href="${esc(l.website)}" target="_blank" rel="noopener">site atual</a>` : ''}</div>
+        <div class="meta">${l.phone ? esc(formatPhone(l.phone)) : 'sem telefone'}${l.rating ? ` · ★ ${l.rating} (${l.reviewCount})` : ''}${l.mapsUrl ? ` · <a href="${esc(l.mapsUrl)}" target="_blank" rel="noopener">${l.source === 'osm' ? 'conferir no Google' : 'Maps'}</a>` : ''}${l.website ? ` · <a href="${esc(l.website)}" target="_blank" rel="noopener">site atual</a>` : ''}</div>
         <div class="tags">
           <span class="tag status">${STATUS_LABEL[l.status] || l.status}</span>
           <span class="tag ${l.websiteKind === 'tem_site' ? '' : 'good'}">${SITE_LABEL[l.websiteKind] || ''}</span>
