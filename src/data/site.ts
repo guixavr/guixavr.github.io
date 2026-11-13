@@ -54,6 +54,9 @@ export type Project = {
   image?: string;
   // Ícone do app (quadrado), mostrado na lista de projetos menores
   icon?: string;
+  // Etiquetas de status exibidas na lista de projetos menores
+  // tone: 'live' (disponível) ou 'dev' (em desenvolvimento)
+  badges?: { label: Localized; tone: 'live' | 'dev' }[];
 };
 
 export const projects: Project[] = [
@@ -172,6 +175,10 @@ export const projects: Project[] = [
     link: 'https://play.google.com/store/apps/details?id=notenow.app',
     linkLabel: { pt: 'Ver na Google Play', en: 'View on Google Play' },
     icon: '/projects/notenow-icon.webp',
+    badges: [
+      { label: { pt: 'Disponível no Android', en: 'Available on Android' }, tone: 'live' },
+      { label: { pt: 'iOS em desenvolvimento', en: 'iOS in development' }, tone: 'dev' },
+    ],
     hue: 40,
   },
   {
@@ -184,6 +191,7 @@ export const projects: Project[] = [
     },
     stack: ['Firebase', 'Google Sign-In', 'AdMob'],
     icon: '/projects/gemla-icon.webp',
+    badges: [{ label: { pt: 'Em desenvolvimento', en: 'In development' }, tone: 'dev' }],
     hue: 290,
   },
 ];

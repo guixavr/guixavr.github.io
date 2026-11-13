@@ -17,8 +17,8 @@ Onde colocar: prints em `public/projects/`, logos em `public/clients/`. Depois, 
 - [ ] Tecnologias do **Escalleo** (hoje o card mostra plataformas e recursos: Android, PWA, Google Play Billing, Offline, Push; faltam as tecnologias usadas, ex.: Flutter, backend, banco)
 - [ ] Descrição e tecnologias do card **Suite IT Digital** (hoje: mobile, Flutter, Dart, Firebase, APIs)
 - [ ] Tecnologias dos sites **Capuano Festas** e **Escola Ruah** (hoje só "Responsive UI" e "SEO")
-- [ ] Confirmar tecnologias do **NoteNow** (hoje: Flutter, Dart, AdMob) e se ele já está na App Store
-- [ ] **Gemla:** link da Google Play quando publicar, tecnologias usadas (hoje: Firebase, Google Sign-In, AdMob) e um print
+- [ ] Confirmar tecnologias do **NoteNow** (hoje: Flutter, Dart, AdMob). Já marcado como disponível no Android e iOS em desenvolvimento; ao publicar na App Store, trocar a etiqueta e adicionar o link
+- [ ] **Gemla:** hoje com a etiqueta "Em desenvolvimento"; ao publicar, remover a etiqueta e adicionar o link da Google Play. Falta confirmar as tecnologias (hoje: Firebase, Google Sign-In, AdMob) e um print
 - [ ] Confirmar a lista de tecnologias da seção **Sobre**
 - [ ] Confirmar a frase "Respondo em até 1 dia útil" na seção de contato
 - [ ] Depoimentos de clientes (opcional, nova seção)
