@@ -59,6 +59,24 @@ No botão **Configurações** do painel:
 - **Seu nome, marca e WhatsApp**: aparecem nas mensagens, na barra da prévia e na proposta.
 - **Endereço do site**: o domínio onde as prévias ficam publicadas. Quando você tiver um domínio próprio, troque aqui e clique em "Refazer prévia" nos leads que ainda não foram contatados.
 - **Pacotes, mensalidade e condições de pagamento**: o que aparece na página de proposta.
+- **Seus dados nos contratos**: nome ou razão social, CPF/CNPJ, endereço, e-mail e a cidade do foro.
+
+## Contratos
+
+Em **Ações → Criar contrato** de cada lead. O contrato é montado pelo próprio código, sem IA:
+
+1. Escolha o pacote que o cliente fechou. Escopo, valor, prazo, rodadas de ajustes e cláusulas vêm dos itens do pacote:
+   - domínio no pacote → cláusula do domínio;
+   - SEO → cláusula de SEO, sem garantia de posição no Google;
+   - formulário → cláusula de LGPD;
+   - mensalidade ligada → cláusula de hospedagem e manutenção; desligada → cláusula dizendo que a hospedagem não está incluída.
+2. Ajuste as opções (entrada, prazos, hora extra) e preencha os dados do cliente. Clique em **Gerar a partir das opções**.
+3. Clique no texto para editar o que quiser. As edições são salvas sozinhas.
+4. Exporte em **Imprimir / PDF** ou **Baixar Word (.doc)**.
+
+O pacote "Personalizado" serve para sistemas e apps: você escreve o escopo e o valor.
+
+Os contratos ficam em `data/db.json`, junto com os leads, e não vão para o GitHub. É um modelo de partida: revise com um advogado antes de usar pela primeira vez.
 
 ## Arquivos
 
@@ -72,4 +90,5 @@ No botão **Configurações** do painel:
 | `lib/generate.mjs` | Textos da prévia e mensagens, com Claude ou textos-modelo |
 | `lib/render.mjs` | HTML da prévia e da proposta |
 | `lib/publish.mjs` | Gravação em `public/preview/` e git push |
+| `lib/contract.mjs` | Modelo de contrato, cláusulas por opção e valor por extenso |
 | `data/db.json` | Seus leads (não vai para o GitHub) |

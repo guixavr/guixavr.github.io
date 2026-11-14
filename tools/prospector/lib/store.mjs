@@ -112,6 +112,6 @@ export const store = {
 };
 
 function pickWork(old) {
-  const keys = ['status', 'notes', 'slug', 'content', 'previewAt', 'publishedAt', 'sentAt', 'followUpAt', 'proposalSentAt', 'history', 'message', 'proposalMessage', 'followUpMessage'];
+  const keys = ['status', 'notes', 'slug', 'content', 'previewAt', 'publishedAt', 'sentAt', 'followUpAt', 'proposalSentAt', 'history', 'message', 'proposalMessage', 'followUpMessage', 'contract'];
   return Object.fromEntries(keys.filter((k) => old[k] !== undefined).map((k) => [k, old[k]]));
 }

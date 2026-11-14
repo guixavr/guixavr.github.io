@@ -56,7 +56,25 @@ label input,label select{width:100%}
 .toast.err{border-color:var(--red)}
 .hint{color:var(--muted);font-size:12.5px;margin:6px 0 0}
 details summary{cursor:pointer;color:var(--muted)}
+#contractDlg{width:min(1280px,96vw);height:min(900px,94vh);padding:0;overflow:hidden}
+#contractDlg[open]{display:flex;flex-direction:column}
+.ct-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--line)}
+.ct-head h3{margin:0;font-size:15px}.ct-head .spacer{flex:1}
+.ct-body{flex:1;min-height:0;display:grid;grid-template-columns:360px 1fr}
+@media(max-width:900px){.ct-body{grid-template-columns:1fr;overflow:auto}.ct-form,.ct-doc{overflow:visible!important}}
+.ct-form{overflow:auto;padding:4px 18px 18px;border-right:1px solid var(--line)}
+.ct-form fieldset{border:0;border-top:1px solid var(--line);margin:14px 0 0;padding:10px 0 0}
+.ct-form legend{color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding-right:8px}
+.ct-form label{margin:8px 0 3px}.ct-form input,.ct-form select,.ct-form textarea{width:100%}
+.ct-form textarea{min-height:90px;font-size:12.5px}
+.ct-form .check{display:flex;gap:8px;align-items:center;color:var(--ink);font-size:13px;margin:7px 0}.ct-form .check input{width:auto}
+.ct-form .grid2{gap:0 10px}
+.ct-doc{overflow:auto;background:#5a6272;padding:24px}
+.ct-doc .contract{max-width:794px;margin:0 auto;padding:56px 64px;box-shadow:0 10px 40px rgba(0,0,0,.35);min-height:100%;outline:none}
+.ct-doc .contract:focus{box-shadow:0 0 0 3px rgba(124,157,255,.6),0 10px 40px rgba(0,0,0,.35)}
+.ct-status{color:var(--muted);font-size:12px}
 </style>
+<style id="contractCss"></style>
 </head>
 <body>
 <header class="app-header">
@@ -133,6 +151,69 @@ details summary{cursor:pointer;color:var(--muted)}
   </div>
 </dialog>
 
+<dialog id="contractDlg">
+  <div class="ct-head">
+    <h3 id="ctTitle">Contrato</h3>
+    <span class="ct-status" id="ctStatus"></span>
+    <span class="spacer"></span>
+    <button id="ctGenerate" class="primary">Gerar a partir das opções</button>
+    <button id="ctPrint">Imprimir / PDF</button>
+    <button id="ctWord">Baixar Word (.doc)</button>
+    <button id="ctClose">Fechar</button>
+  </div>
+  <div class="ct-body">
+    <form class="ct-form" id="ctForm" autocomplete="off">
+      <p class="hint">Escolha o serviço e ajuste as opções. Depois clique no texto ao lado para editar o que quiser: as edições são salvas sozinhas.</p>
+      <fieldset><legend>Serviço</legend>
+        <label>Pacote<select name="packageId"></select></label>
+        <label>Nome do serviço<input name="serviceName"></label>
+        <label>O que está incluído (um item por linha)<textarea name="scopeItems"></textarea></label>
+        <label class="check"><input type="checkbox" name="domain"> Inclui domínio</label>
+        <label class="check"><input type="checkbox" name="seo"> Inclui SEO</label>
+        <label class="check"><input type="checkbox" name="forms"> Tem formulário (cláusula de LGPD)</label>
+        <label class="check"><input type="checkbox" name="portfolioRights"> Posso mostrar no meu portfólio</label>
+      </fieldset>
+      <fieldset><legend>Valores e prazos</legend>
+        <div class="grid2">
+          <label>Valor total (R$)<input name="price" type="number" min="0" step="0.01"></label>
+          <label>Entrada (%)<input name="entryPercent" type="number" min="0" max="100"></label>
+          <label>Prazo de entrega (dias)<input name="deadlineDays" type="number" min="1"></label>
+          <label>Prazo p/ cliente mandar conteúdo<input name="contentDays" type="number" min="1"></label>
+          <label>Rodadas de ajustes<input name="revisions" type="number" min="0"></label>
+          <label>Hora extra (R$)<input name="extraHourRate" type="number" min="0" step="0.01"></label>
+        </div>
+        <label>Formas de pagamento<input name="paymentMethods"></label>
+      </fieldset>
+      <fieldset><legend>Mensalidade</legend>
+        <label class="check"><input type="checkbox" name="includeMonthly"> Incluir hospedagem e manutenção mensal</label>
+        <div class="grid2">
+          <label>Valor mensal (R$)<input name="monthlyPrice" type="number" min="0" step="0.01"></label>
+          <label>Aviso para cancelar (dias)<input name="monthlyNoticeDays" type="number" min="0"></label>
+        </div>
+        <label>O que a mensalidade cobre (um por linha)<textarea name="monthlyItems" style="min-height:70px"></textarea></label>
+      </fieldset>
+      <fieldset><legend>Cliente</legend>
+        <label>Nome ou razão social<input name="client.name"></label>
+        <div class="grid2">
+          <label>CPF ou CNPJ<input name="client.doc"></label>
+          <label>Representante (se empresa)<input name="client.representative"></label>
+          <label>E-mail<input name="client.email"></label>
+          <label>Telefone<input name="client.phone"></label>
+        </div>
+        <label>Endereço completo<input name="client.address"></label>
+      </fieldset>
+      <fieldset><legend>Assinatura</legend>
+        <div class="grid2">
+          <label>Data<input name="startDate" type="date"></label>
+          <label>Cidade / foro<input name="city"></label>
+        </div>
+      </fieldset>
+      <p class="hint">Modelo de partida gerado pelo próprio sistema, sem IA. Revise com um advogado antes de usar pela primeira vez.</p>
+    </form>
+    <div class="ct-doc"><div class="contract" id="ctDoc" contenteditable="true" spellcheck="true"></div></div>
+  </div>
+</dialog>
+
 <dialog id="settingsDlg">
   <h3>Configurações</h3>
   <form id="settingsForm">
@@ -144,6 +225,16 @@ details summary{cursor:pointer;color:var(--muted)}
       <label>Dias até o follow-up<input name="followUpDays" type="number" min="1"></label>
       <label>Condições de pagamento<input name="paymentTerms"></label>
     </div>
+    <fieldset style="border:0;border-top:1px solid var(--line);margin:14px 0 0;padding:6px 0 0">
+      <legend style="color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase">Seus dados nos contratos</legend>
+      <div class="grid2">
+        <label>Nome ou razão social<input name="providerName" placeholder="Igual ao seu nome, se vazio"></label>
+        <label>CPF ou CNPJ<input name="providerDoc"></label>
+        <label>Endereço completo<input name="providerAddress"></label>
+        <label>E-mail<input name="providerEmail"></label>
+        <label>Cidade do foro (sua comarca)<input name="contractCity" placeholder="Ex.: São Paulo - SP"></label>
+      </div>
+    </fieldset>
     <label>Pacotes (JSON)</label>
     <textarea name="packages" style="min-height:200px;font-family:ui-monospace,monospace;font-size:12px"></textarea>
     <label>Mensalidade (JSON, ou vazio para não mostrar)</label>
@@ -317,6 +408,8 @@ function renderLeads() {
             ${l.slug && l.phone && l.status !== 'nao_contatar' ? `<button class="wa" data-act="send-first" ${canSend ? '' : 'disabled title="Publique a prévia antes de enviar"'}>${l.sentAt ? 'Reenviar prévia' : 'Enviar prévia'}</button>` : ''}
             ${l.sentAt ? `<button data-act="send-followup" ${canSend ? '' : 'disabled title="Publique a prévia antes de enviar"'}>Follow-up</button>` : ''}
             ${l.slug && l.phone && l.status !== 'nao_contatar' ? `<button data-act="send-proposal" ${canSend ? '' : 'disabled title="Publique a prévia antes de enviar"'}>Enviar proposta</button>` : ''}
+            <span class="menu-section">Contrato</span>
+            <button data-act="contract" style="grid-column:1/-1">${l.contract ? 'Abrir contrato' : 'Criar contrato'}</button>
             <span class="menu-section">Gestão</span>
             <select data-act="status">${state.statuses.map((s) => `<option value="${s}" ${s === l.status ? 'selected' : ''}>${STATUS_LABEL[s]}</option>`).join('')}</select>
             <button class="danger" data-act="delete">Excluir lead</button>
@@ -372,6 +465,7 @@ $('#leads').addEventListener('click', async (e) => {
     } else if (act === 'send-first') openSend(l, 'first');
     else if (act === 'send-followup') openSend(l, 'followup');
     else if (act === 'send-proposal') openSend(l, 'proposal');
+    else if (act === 'contract') { e.target.closest('details')?.removeAttribute('open'); await openContract(l); }
     else if (act === 'delete-preview') {
       if (!confirm(`Excluir a prévia de ${l.name}? O lead será mantido, mas links já enviados deixarão de abrir depois da próxima publicação.`)) return;
       await api('DELETE', `/api/leads/${encodeURIComponent(id)}/preview`); refresh();
@@ -398,7 +492,7 @@ $('#btnPublish').onclick = async () => {
 
 $('#btnSettings').onclick = () => {
   const f = $('#settingsForm'), s = state.settings;
-  for (const k of ['name', 'brand', 'whatsapp', 'siteUrl', 'followUpDays', 'paymentTerms']) f[k].value = s[k] ?? '';
+  for (const k of ['name', 'brand', 'whatsapp', 'siteUrl', 'followUpDays', 'paymentTerms', ...PROVIDER_KEYS]) f[k].value = s[k] ?? '';
   f.packages.value = JSON.stringify(s.packages, null, 2);
   f.monthly.value = s.monthly ? JSON.stringify(s.monthly, null, 2) : '';
   $('#settingsDlg').showModal();
@@ -408,7 +502,7 @@ $('#settingsForm').onsubmit = async (e) => {
   e.preventDefault();
   const f = e.target;
   try {
-    const body = Object.fromEntries(['name', 'brand', 'whatsapp', 'siteUrl', 'paymentTerms'].map((k) => [k, f[k].value.trim()]));
+    const body = Object.fromEntries(['name', 'brand', 'whatsapp', 'siteUrl', 'paymentTerms', ...PROVIDER_KEYS].map((k) => [k, f[k].value.trim()]));
     body.whatsapp = body.whatsapp.replace(/\D/g, '');
     body.followUpDays = Number(f.followUpDays.value) || 3;
     body.packages = JSON.parse(f.packages.value);
@@ -417,6 +511,134 @@ $('#settingsForm').onsubmit = async (e) => {
     $('#settingsDlg').close(); toast('Configurações salvas.'); refresh();
   } catch (err) { toast('Erro: ' + err.message, true); }
 };
+
+// ---------- Contrato ----------
+const PROVIDER_KEYS = ['providerName', 'providerDoc', 'providerAddress', 'providerEmail', 'contractCity'];
+const CT_NUM = ['price', 'entryPercent', 'deadlineDays', 'contentDays', 'revisions', 'extraHourRate', 'monthlyPrice', 'monthlyNoticeDays'];
+const CT_BOOL = ['domain', 'seo', 'forms', 'includeMonthly', 'portfolioRights'];
+const CT_TEXT = ['packageId', 'serviceName', 'paymentMethods', 'startDate', 'city'];
+const CT_LINES = ['scopeItems', 'monthlyItems'];
+const CT_CLIENT = ['name', 'doc', 'address', 'representative', 'email', 'phone'];
+let ct = { lead: null, edited: false, saveTimer: null };
+const ctField = (name) => $('#ctForm').elements.namedItem(name);
+
+function fillContractForm(o) {
+  const pkgs = state.settings.packages || [];
+  ctField('packageId').innerHTML = pkgs.map((p) => `<option value="${esc(p.id)}">${esc(p.name)} · ${esc(p.price)}</option>`).join('') + '<option value="personalizado">Personalizado (sistema, app, outro)</option>';
+  for (const k of [...CT_TEXT, ...CT_NUM]) ctField(k).value = o[k] ?? '';
+  for (const k of CT_BOOL) ctField(k).checked = Boolean(o[k]);
+  for (const k of CT_LINES) ctField(k).value = (o[k] || []).join('\n');
+  for (const k of CT_CLIENT) ctField(`client.${k}`).value = o.client?.[k] ?? '';
+  toggleMonthly();
+}
+
+function readContractForm() {
+  const o = {};
+  for (const k of [...CT_TEXT, ...CT_NUM, ...CT_LINES]) o[k] = ctField(k).value;
+  for (const k of CT_BOOL) o[k] = ctField(k).checked;
+  o.client = Object.fromEntries(CT_CLIENT.map((k) => [k, ctField(`client.${k}`).value]));
+  return o;
+}
+
+function toggleMonthly() {
+  const on = ctField('includeMonthly').checked;
+  for (const k of ['monthlyPrice', 'monthlyNoticeDays', 'monthlyItems']) ctField(k).disabled = !on;
+}
+
+function ctSetStatus(text) { $('#ctStatus').textContent = text; }
+
+async function openContract(l) {
+  ct = { lead: l, edited: false, saveTimer: null };
+  const data = await api('GET', `/api/leads/${encodeURIComponent(l.id)}/contract`);
+  $('#contractCss').textContent = data.css;
+  $('#ctTitle').textContent = `Contrato · ${l.name}`;
+  fillContractForm(data.options);
+  if (data.html) {
+    $('#ctDoc').innerHTML = data.html;
+    ct.edited = data.edited;
+    ctSetStatus(data.edited ? 'Com edições manuais, salvas' : 'Salvo');
+  } else {
+    await generateContract(true);
+  }
+  $('#contractDlg').showModal();
+}
+
+async function generateContract(silent) {
+  if (!silent && ct.edited && !confirm('Gerar de novo substitui as edições que você fez no texto. Continuar?')) return;
+  const r = await api('POST', `/api/leads/${encodeURIComponent(ct.lead.id)}/contract/generate`, { options: readContractForm() });
+  $('#ctDoc').innerHTML = r.html;
+  fillContractForm(r.options);
+  ct.edited = false;
+  ctSetStatus('Gerado e salvo');
+  refresh();
+}
+
+$('#ctGenerate').onclick = () => generateContract(false).catch((e) => toast(e.message, true));
+
+$('#ctForm').addEventListener('change', async (e) => {
+  if (e.target.name === 'includeMonthly') toggleMonthly();
+  if (e.target.name === 'packageId') {
+    // Trocar o pacote recarrega escopo, valor, prazos e cláusulas; mantém os dados do cliente.
+    const current = readContractForm();
+    const fresh = await api('POST', `/api/leads/${encodeURIComponent(ct.lead.id)}/contract/defaults`, { packageId: e.target.value, client: current.client, city: current.city });
+    if (e.target.value === 'personalizado') {
+      Object.assign(fresh, { packageId: 'personalizado', serviceName: 'Desenvolvimento de sistema web', scopeItems: [], price: 0, domain: false, seo: false, forms: false, deadlineDays: 30, revisions: 2 });
+    }
+    fillContractForm({ ...fresh, startDate: current.startDate });
+  }
+  ctSetStatus('Opções alteradas: clique em "Gerar a partir das opções" para atualizar o texto');
+});
+$('#ctForm').addEventListener('submit', (e) => e.preventDefault());
+
+$('#ctDoc').addEventListener('input', () => {
+  ct.edited = true;
+  ctSetStatus('Editando…');
+  clearTimeout(ct.saveTimer);
+  ct.saveTimer = setTimeout(saveContractEdits, 1000);
+});
+
+async function saveContractEdits() {
+  clearTimeout(ct.saveTimer);
+  if (!ct.lead || !ct.edited) return;
+  try {
+    await api('PUT', `/api/leads/${encodeURIComponent(ct.lead.id)}/contract`, { html: $('#ctDoc').innerHTML });
+    ctSetStatus('Edições salvas');
+  } catch (e) { ctSetStatus('Erro ao salvar: ' + e.message); }
+}
+
+function contractDocument(forWord) {
+  const title = `Contrato - ${ct.lead.name}`;
+  const ns = forWord ? ' xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"' : '';
+  return `<!doctype html><html${ns} lang="pt-BR"><head><meta charset="utf-8"><title>${esc(title)}</title>
+<style>@page{size:A4;margin:2.2cm 2cm}body{margin:0}${$('#contractCss').textContent}</style></head>
+<body><div class="contract">${$('#ctDoc').innerHTML}</div></body></html>`;
+}
+
+const contractFileName = () => `contrato-${(ct.lead.slug || ct.lead.name).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
+
+$('#ctPrint').onclick = async () => {
+  await saveContractEdits();
+  const w = window.open('', '_blank');
+  if (!w) return toast('O navegador bloqueou a janela de impressão.', true);
+  w.document.write(contractDocument(false));
+  w.document.title = contractFileName();
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 300);
+};
+
+$('#ctWord').onclick = async () => {
+  await saveContractEdits();
+  const blob = new Blob(['﻿', contractDocument(true)], { type: 'application/msword' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${contractFileName()}.doc`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+};
+
+$('#ctClose').onclick = async () => { await saveContractEdits(); $('#contractDlg').close(); };
+$('#contractDlg').addEventListener('cancel', () => saveContractEdits());
 
 refresh();
 </script>

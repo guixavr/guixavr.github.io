@@ -11,6 +11,7 @@ import { classifyWebsite, scoreLead } from './lib/score.mjs';
 import { generateContent, hasAI } from './lib/generate.mjs';
 import { renderPreview, renderProposal } from './lib/render.mjs';
 import { assertPreviewPublished } from './lib/send-guard.mjs';
+import { CONTRACT_CSS, defaultOptions, renderContract } from './lib/contract.mjs';
 import { PREVIEW_DIR, pendingPreviewChanges, publishPreview, publishPreviews, removePreviewFiles, slugify, writePreviewFiles } from './lib/publish.mjs';
 
 try { process.loadEnvFile(path.join(ROOT, '.env')); } catch { /* .env é opcional */ }
@@ -196,6 +197,77 @@ route('POST', /^\/api\/leads\/([^/]+)\/publish$/, async ([, id]) => {
   if (result.published) store.update(lead.id, { publishedAt: new Date().toISOString() });
   return result;
 });
+
+// ---------- Contrato (gerado por código, fica só em data/db.json) ----------
+
+route('GET', /^\/api\/leads\/([^/]+)\/contract$/, async ([, id]) => {
+  const lead = store.get(decodeURIComponent(id));
+  if (!lead) throw httpError(404, 'Lead não encontrado.');
+  const settings = store.settings();
+  return {
+    options: lead.contract?.options ?? defaultOptions(lead, settings),
+    html: lead.contract?.html ?? null,
+    edited: Boolean(lead.contract?.edited),
+    updatedAt: lead.contract?.updatedAt ?? null,
+    css: CONTRACT_CSS,
+  };
+});
+
+// Opções padrão de um pacote (o painel chama ao trocar o pacote).
+route('POST', /^\/api\/leads\/([^/]+)\/contract\/defaults$/, async ([, id], body) => {
+  const lead = store.get(decodeURIComponent(id));
+  if (!lead) throw httpError(404, 'Lead não encontrado.');
+  const fresh = defaultOptions(lead, store.settings(), body.packageId);
+  // Mantém os dados do cliente já preenchidos.
+  return { ...fresh, client: { ...fresh.client, ...(body.client ?? {}) }, city: body.city || fresh.city };
+});
+
+route('POST', /^\/api\/leads\/([^/]+)\/contract\/generate$/, async ([, id], body) => {
+  const lead = store.get(decodeURIComponent(id));
+  if (!lead) throw httpError(404, 'Lead não encontrado.');
+  const options = normalizeContractOptions(body.options ?? {});
+  const html = renderContract(options, store.settings());
+  const now = new Date().toISOString();
+  store.update(lead.id, { contract: { options, html, edited: false, generatedAt: now, updatedAt: now } });
+  return { options, html, edited: false, updatedAt: now };
+});
+
+route('PUT', /^\/api\/leads\/([^/]+)\/contract$/, async ([, id], body) => {
+  const lead = store.get(decodeURIComponent(id));
+  if (!lead?.contract) throw httpError(404, 'Gere o contrato antes de salvar edições.');
+  if (typeof body.html !== 'string' || !body.html.trim()) throw httpError(400, 'Contrato vazio.');
+  const now = new Date().toISOString();
+  store.update(lead.id, { contract: { ...lead.contract, html: body.html, edited: true, updatedAt: now } });
+  return { ok: true, updatedAt: now };
+});
+
+function normalizeContractOptions(o) {
+  const num = (v, d) => (Number.isFinite(Number(v)) && String(v).trim() !== '' ? Number(v) : d);
+  const lines = (v) => (Array.isArray(v) ? v : String(v ?? '').split('\n')).map((s) => String(s).trim()).filter(Boolean);
+  return {
+    packageId: String(o.packageId ?? ''),
+    serviceName: String(o.serviceName ?? 'Landing page').trim(),
+    scopeItems: lines(o.scopeItems),
+    price: Math.max(0, num(o.price, 0)),
+    entryPercent: Math.min(100, Math.max(0, num(o.entryPercent, 50))),
+    paymentMethods: String(o.paymentMethods ?? '').trim() || 'Pix',
+    deadlineDays: Math.max(1, num(o.deadlineDays, 15)),
+    contentDays: Math.max(1, num(o.contentDays, 5)),
+    revisions: Math.max(0, num(o.revisions, 1)),
+    extraHourRate: Math.max(0, num(o.extraHourRate, 80)),
+    domain: Boolean(o.domain),
+    seo: Boolean(o.seo),
+    forms: Boolean(o.forms),
+    includeMonthly: Boolean(o.includeMonthly),
+    monthlyPrice: Math.max(0, num(o.monthlyPrice, 0)),
+    monthlyItems: lines(o.monthlyItems),
+    monthlyNoticeDays: Math.max(0, num(o.monthlyNoticeDays, 30)),
+    portfolioRights: Boolean(o.portfolioRights),
+    startDate: /^\d{4}-\d{2}-\d{2}$/.test(o.startDate ?? '') ? o.startDate : new Date().toISOString().slice(0, 10),
+    city: String(o.city ?? '').trim(),
+    client: Object.fromEntries(['name', 'doc', 'address', 'representative', 'email', 'phone'].map((k) => [k, String(o.client?.[k] ?? '').trim()])),
+  };
+}
 
 // "Mo-Fr 09:00-18:00; Sa 09:00-13:00" -> ["Seg a Sex: 09:00-18:00", "Sáb: 09:00-13:00"]
 function osmHoursToText(raw) {
