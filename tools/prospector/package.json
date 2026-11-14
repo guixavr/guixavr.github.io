@@ -4,7 +4,8 @@
   "type": "module",
   "description": "Ferramenta local para achar negócios sem site, gerar prévias de landing page e abordar pelo WhatsApp.",
   "scripts": {
-    "start": "node server.mjs"
+    "start": "node server.mjs",
+    "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",

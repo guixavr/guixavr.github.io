@@ -10,7 +10,7 @@ Roda só no seu computador: as chaves de API e a lista de leads (`data/db.json`)
    - pontua mais quem não tem site ou só tem Instagram/Linktree;
    - pontua mais nota alta e muitas avaliações (negócio ativo);
    - pontua mais quem tem celular (provável WhatsApp).
-2. **Gerar prévia**: o Claude escreve os textos com base nos dados públicos do Google (avaliações, horários, fotos). Saem duas páginas:
+2. **Gerar prévia**: o Claude escreve os textos com base nos dados públicos do Google (avaliações e horários). Saem duas páginas:
    - `/preview/<slug>/`: a landing page, com uma barra "Quero este site" que leva para o seu WhatsApp;
    - `/preview/<slug>/proposta/`: pacotes, valores e forma de pagamento.
 3. **Publicar prévias**: faz commit e push só de `public/preview/`. O GitHub Pages atualiza em 1 a 2 minutos.
@@ -38,7 +38,7 @@ npm start              # abre em http://localhost:4400
   - Traz nome, telefone, endereço, horário e se o negócio tem site.
   - Tem menos negócios que o Google e não tem nota nem avaliações. Use o link "conferir no Google" de cada lead para ver a reputação antes de abordar.
   - Os servidores são públicos e voluntários: a ferramenta faz uma busca por nicho, com pausa entre elas. Evite buscar dezenas de nichos várias vezes seguidas.
-- **Com chave do Google**: a busca passa a usar a Google Places API automaticamente, com notas, avaliações e fotos.
+- **Com chave do Google**: a busca passa a usar a Google Places API automaticamente, com notas e avaliações.
 
 ### Chaves
 

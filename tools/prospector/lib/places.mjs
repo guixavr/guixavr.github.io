@@ -89,10 +89,10 @@ function toLead(p, query) {
 }
 
 const DETAIL_FIELDS = [
-  'id', 'displayName', 'editorialSummary', 'reviews', 'photos', 'regularOpeningHours', 'primaryTypeDisplayName',
+  'id', 'displayName', 'editorialSummary', 'reviews', 'regularOpeningHours', 'primaryTypeDisplayName',
 ].join(',');
 
-// Detalhes usados para escrever a prévia: avaliações, horário, fotos (com atribuição).
+// Detalhes usados para escrever a prévia: avaliações e horário. Fotos do Google não são publicadas.
 export async function placeDetails(placeId) {
   const p = await call(`${BASE}/places/${encodeURIComponent(placeId)}?languageCode=pt-BR`, { fieldMask: DETAIL_FIELDS });
   const reviews = (p.reviews ?? [])
@@ -100,21 +100,9 @@ export async function placeDetails(placeId) {
     .slice(0, 5)
     .map((r) => ({ author: r.authorAttribution?.displayName ?? 'Cliente', rating: r.rating, text: r.text?.text ?? r.originalText?.text }));
 
-  const photos = [];
-  for (const ph of (p.photos ?? []).slice(0, 4)) {
-    try {
-      // skipHttpRedirect devolve um photoUri público, sem expor a chave de API na prévia.
-      const media = await call(`${BASE}/${ph.name}/media?maxWidthPx=1600&skipHttpRedirect=true`);
-      if (media.photoUri) {
-        photos.push({ url: media.photoUri, author: ph.authorAttributions?.[0]?.displayName ?? 'Google Maps' });
-      }
-    } catch { /* foto é opcional */ }
-  }
-
   return {
     summary: p.editorialSummary?.text ?? '',
     hours: p.regularOpeningHours?.weekdayDescriptions ?? [],
     reviews,
-    photos,
   };
 }

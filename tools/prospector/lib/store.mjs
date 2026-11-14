@@ -98,6 +98,12 @@ export const store = {
     save();
     return db.leads[id];
   },
+  replace(id, lead) {
+    if (!db.leads[id]) return null;
+    db.leads[id] = { ...lead, updatedAt: new Date().toISOString() };
+    save();
+    return db.leads[id];
+  },
   remove(id) {
     delete db.leads[id];
     save();

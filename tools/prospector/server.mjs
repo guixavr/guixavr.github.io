@@ -3,13 +3,15 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT, STATUSES, store } from './lib/store.mjs';
+import { clearPreviewData } from './lib/preview-state.mjs';
 import { SUGGESTED_NICHES, placeDetails, searchText } from './lib/places.mjs';
 import { searchOSM } from './lib/osm.mjs';
 import { normalizePhone } from './lib/phone.mjs';
 import { classifyWebsite, scoreLead } from './lib/score.mjs';
 import { generateContent, hasAI } from './lib/generate.mjs';
 import { renderPreview, renderProposal } from './lib/render.mjs';
-import { PREVIEW_DIR, pendingPreviewChanges, publishPreviews, removePreviewFiles, slugify, writePreviewFiles } from './lib/publish.mjs';
+import { assertPreviewPublished } from './lib/send-guard.mjs';
+import { PREVIEW_DIR, pendingPreviewChanges, publishPreview, publishPreviews, removePreviewFiles, slugify, writePreviewFiles } from './lib/publish.mjs';
 
 try { process.loadEnvFile(path.join(ROOT, '.env')); } catch { /* .env é opcional */ }
 
@@ -112,6 +114,14 @@ route('DELETE', /^\/api\/leads\/([^/]+)$/, async ([, id]) => {
   return { ok: true };
 });
 
+route('DELETE', /^\/api\/leads\/([^/]+)\/preview$/, async ([, id]) => {
+  const lead = store.get(decodeURIComponent(id));
+  if (!lead) throw httpError(404, 'Lead não encontrado.');
+  if (!lead.slug) throw httpError(400, 'Este lead não tem prévia para excluir.');
+  removePreviewFiles(lead.slug);
+  return store.replace(lead.id, clearPreviewData(lead));
+});
+
 route('POST', /^\/api\/leads\/([^/]+)\/generate$/, async ([, id]) => {
   const lead = store.get(decodeURIComponent(id));
   if (!lead) throw httpError(404, 'Lead não encontrado.');
@@ -124,7 +134,8 @@ route('POST', /^\/api\/leads\/([^/]+)\/generate$/, async ([, id]) => {
     details.hours = osmHoursToText(lead.hours);
   }
   const settings = store.settings();
-  const content = { ...(await generateContent(lead, details, settings)), photos: details.photos, reviews: details.reviews, hours: details.hours };
+  const generated = await generateContent(lead, details, settings);
+  const content = { ...generated, reviews: details.reviews, hours: details.hours };
 
   const slug = lead.slug ?? slugify(lead.name, lead.id);
   const previewPath = `/preview/${slug}/`;
@@ -151,6 +162,7 @@ route('POST', /^\/api\/leads\/([^/]+)\/generate$/, async ([, id]) => {
 route('POST', /^\/api\/leads\/([^/]+)\/sent$/, async ([, id], body) => {
   const lead = store.get(decodeURIComponent(id));
   if (!lead) throw httpError(404, 'Lead não encontrado.');
+  assertPreviewPublished(lead);
   const now = new Date();
   const days = store.settings().followUpDays ?? 3;
   const history = [...(lead.history ?? []), { kind: body.kind, at: now.toISOString() }];
@@ -173,6 +185,15 @@ route('POST', /^\/api\/publish$/, async () => {
     const at = new Date().toISOString();
     for (const l of store.leads()) if (l.slug && !l.publishedAt) store.update(l.id, { publishedAt: at });
   }
+  return result;
+});
+
+route('POST', /^\/api\/leads\/([^/]+)\/publish$/, async ([, id]) => {
+  const lead = store.get(decodeURIComponent(id));
+  if (!lead) throw httpError(404, 'Lead não encontrado.');
+  if (!lead.slug) throw httpError(400, 'Gere a prévia antes de publicar.');
+  const result = await publishPreview(lead.slug);
+  if (result.published) store.update(lead.id, { publishedAt: new Date().toISOString() });
   return result;
 });
 

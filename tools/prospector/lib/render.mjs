@@ -55,8 +55,6 @@ export function renderPreview(lead, content, settings, { proposalPath } = {}) {
   const ctaHref = mobile
     ? waLink(lead.phone, `Olá! Vim pelo site da ${lead.name} e gostaria de mais informações.`)
     : lead.phone ? `tel:+${lead.phone}` : '#contato';
-  const hero = content.photos?.[0];
-  const gallery = (content.photos ?? []).slice(1, 4);
   const reviews = (content.reviews ?? []).slice(0, 3);
   const freelancerWa = waLink(settings.whatsapp, `Oi, ${settings.name.split(' ')[0]}! Vi a prévia do site da ${lead.name} e quero saber mais.`);
   const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(`${lead.name}, ${lead.address}`)}&output=embed`;
@@ -69,11 +67,8 @@ export function renderPreview(lead, content, settings, { proposalPath } = {}) {
 .top nav{display:flex;gap:22px;font-size:.95rem}.top nav a{text-decoration:none;color:var(--muted)}
 @media(max-width:760px){.top nav{display:none}}
 .hero{position:relative;padding:96px 0 88px;background:var(--soft);overflow:hidden}
-.hero.has-photo{color:#fff;background:#111}
-.hero.has-photo::before{content:"";position:absolute;inset:0;background:linear-gradient(100deg,rgba(0,0,0,.78),rgba(0,0,0,.35)),var(--photo) center/cover}
 .hero .wrap{position:relative}.hero p.lead{font-size:1.2rem;max-width:36ch;opacity:.9}
 .hero .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
-.hero.has-photo .btn.ghost{color:#fff;border-color:rgba(255,255,255,.5)}
 .rating{display:inline-flex;align-items:center;gap:.5em;margin-top:26px;font-size:.95rem;opacity:.9}
 .stars{color:#f5b301;letter-spacing:2px}
 .grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
@@ -84,9 +79,7 @@ export function renderPreview(lead, content, settings, { proposalPath } = {}) {
 .diffs{list-style:none;padding:0;margin:0;display:grid;gap:12px}
 .diffs li{display:flex;gap:12px;align-items:flex-start;padding:16px 18px;border-radius:14px;background:var(--soft)}
 .diffs li::before{content:"✓";color:var(--accent);font-weight:700}
-.gallery{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-.gallery figure{margin:0}.gallery img{aspect-ratio:4/3;object-fit:cover;border-radius:14px;width:100%}
-.gallery figcaption{font-size:.75rem;color:var(--muted);margin-top:4px}
+  .highlights{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:-34px;position:relative;z-index:2}.highlight{padding:18px;border-radius:16px;background:#fff;box-shadow:0 14px 35px -28px rgba(0,0,0,.5);border:1px solid var(--line);font-weight:600}.highlight::before{content:"✓";display:inline-grid;place-items:center;width:25px;height:25px;border-radius:50%;background:var(--soft);color:var(--accent);margin-right:9px}@media(max-width:720px){.highlights{grid-template-columns:1fr;margin-top:24px}}
 .quote{font-size:1.02rem}.quote footer{margin-top:10px;font-weight:600;font-size:.9rem}
 details{border-bottom:1px solid var(--line);padding:18px 0}summary{cursor:pointer;font-weight:600;list-style:none}summary::-webkit-details-marker{display:none}
 details p{margin:10px 0 0;color:var(--muted)}
@@ -109,8 +102,8 @@ footer.site{padding:40px 0 120px;color:var(--muted);font-size:.9rem;border-top:1
   <a class="btn" href="${esc(ctaHref)}" target="_blank" rel="noopener">${mobile ? ICON_WA : ''}<span>${mobile ? 'WhatsApp' : 'Ligar'}</span></a>
 </div></header>
 
-<section class="hero${hero ? ' has-photo' : ''}"${hero ? ` style="--photo:url('${esc(hero.url)}')"` : ''}><div class="wrap">
-  <span class="eyebrow"${hero ? ' style="color:#fff;opacity:.85"' : ''}>${esc(lead.category || 'Bem-vindo')}</span>
+<section class="hero"><div class="wrap">
+  <span class="eyebrow">${esc(lead.category || 'Bem-vindo')}</span>
   <h1>${esc(content.headline)}</h1>
   <p class="lead">${esc(content.subheadline)}</p>
   <div class="actions">
@@ -119,6 +112,8 @@ footer.site{padding:40px 0 120px;color:var(--muted);font-size:.9rem;border-top:1
   </div>
   ${lead.rating ? `<div class="rating"><span class="stars">${'★'.repeat(Math.round(lead.rating))}</span> ${esc(String(lead.rating).replace('.', ','))} no Google${lead.reviewCount ? ` · ${lead.reviewCount} avaliações` : ''}</div>` : ''}
 </div></section>
+
+${content.highlights?.length ? `<section class="highlights-section"><div class="wrap"><span class="eyebrow">Por que escolher</span><div class="highlights">${content.highlights.map((highlight) => `<div class="highlight">${esc(highlight)}</div>`).join('')}</div></div></section>` : ''}
 
 <section id="servicos"><div class="wrap">
   <span class="eyebrow">Serviços</span><h2>O que fazemos</h2>
@@ -131,10 +126,6 @@ footer.site{padding:40px 0 120px;color:var(--muted);font-size:.9rem;border-top:1
   <div><span class="eyebrow">Sobre</span><h2>${esc(content.aboutTitle)}</h2><p class="muted" style="font-size:1.08rem">${esc(content.about)}</p></div>
   <ul class="diffs">${content.differentials.map((d) => `<li>${esc(d)}</li>`).join('')}</ul>
 </div></section>
-
-${gallery.length ? `<section><div class="wrap"><div class="gallery">
-  ${gallery.map((p) => `<figure><img src="${esc(p.url)}" alt="${esc(lead.name)}" loading="lazy"><figcaption>Foto: ${esc(p.author)} / Google Maps</figcaption></figure>`).join('\n  ')}
-</div></div></section>` : ''}
 
 ${reviews.length ? `<section id="avaliacoes"><div class="wrap">
   <span class="eyebrow">Avaliações do Google</span><h2>Quem já foi atendido recomenda</h2>
@@ -153,6 +144,7 @@ ${reviews.length ? `<section id="avaliacoes"><div class="wrap">
     <span class="eyebrow">Contato</span><h2>Onde estamos</h2>
     <p class="muted">${esc(lead.address)}</p>
     ${lead.phone ? `<p><b>Telefone:</b> ${esc(formatPhone(lead.phone))}</p>` : ''}
+    ${content.trustLine ? `<p class="muted">${esc(content.trustLine)}</p>` : ''}
     ${content.hours?.length ? `<p style="margin-bottom:.4em"><b>Horários</b></p><ul class="muted" style="padding-left:18px;margin-top:0">${content.hours.map((h) => `<li>${esc(h)}</li>`).join('')}</ul>` : ''}
     <a class="btn" href="${esc(ctaHref)}" target="_blank" rel="noopener">${mobile ? ICON_WA : ''}${esc(content.ctaLabel)}</a>
   </div>

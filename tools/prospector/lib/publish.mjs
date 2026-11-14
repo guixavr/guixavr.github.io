@@ -45,6 +45,21 @@ export async function pendingPreviewChanges() {
   }
 }
 
+function previewGitPath(slug) {
+  if (!/^[a-z0-9-]+$/.test(String(slug))) throw new Error('Identificador de prévia inválido.');
+  return `public/preview/${slug}`;
+}
+
+export async function publishPreview(slug) {
+  const previewPath = previewGitPath(slug);
+  const changes = await git('status', '--porcelain', '--', previewPath);
+  if (!changes) return { published: false, message: 'Esta prévia já está publicada.' };
+  await git('add', '--', previewPath);
+  await git('commit', '-m', `Preview: ${slug}`, '--', previewPath);
+  await git('push');
+  return { published: true, message: 'Prévia publicada. O GitHub Pages leva 1 a 2 minutos para atualizar.' };
+}
+
 // Faz commit só da pasta public/preview e envia para o GitHub.
 export async function publishPreviews() {
   const changes = await pendingPreviewChanges();

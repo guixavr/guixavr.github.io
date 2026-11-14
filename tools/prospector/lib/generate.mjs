@@ -15,6 +15,8 @@ const Content = z.object({
   about: z.string().describe('Parágrafo de 2 a 4 frases sobre o negócio, sem inventar fatos'),
   services: z.array(z.object({ title: z.string(), description: z.string() })).describe('4 a 6 serviços típicos do segmento'),
   differentials: z.array(z.string()).describe('3 ou 4 diferenciais curtos, baseados nas avaliações quando houver'),
+  highlights: z.array(z.string()).min(3).max(3).describe('Exatamente 3 razões curtas para entrar em contato. Use somente dados públicos ou benefícios genéricos seguros.'),
+  trustLine: z.string().describe('Linha curta de prova social factual. Use nota e quantidade de avaliações apenas quando recebidas; caso contrário, uma frase neutra sobre atendimento ou localização.'),
   faq: z.array(z.object({ q: z.string(), a: z.string() })).describe('3 perguntas frequentes com respostas genéricas e seguras'),
   closingTitle: z.string(),
   closingText: z.string(),
@@ -29,7 +31,9 @@ Regras para a landing page:
 - Português do Brasil, tom profissional e caloroso, frases curtas.
 - Nunca invente fatos verificáveis: preços, anos de mercado, número de clientes, prêmios, certificações, nomes de profissionais, convênios. Se não souber, escreva de forma genérica.
 - Use as avaliações reais (quando houver) para escolher os diferenciais, sem copiá-las.
-- Os serviços devem ser os típicos do segmento; o dono vai ajustar depois.
+- Os serviços devem ser os típicos do segmento, apresentados como opções a confirmar; o dono vai ajustar depois.
+- A prévia deve parecer uma demonstração comercial bem resolvida: destaque um benefício principal, exatamente 3 motivos para o cliente entrar em contato, uma linha curta de confiança e uma chamada final clara.
+- Nunca afirme que há equipe, experiência, atendimento personalizado, orçamento sem compromisso, rapidez, disponibilidade, agendamento ou localização de fácil acesso sem os dados confirmarem isso.
 
 Regras para as mensagens de WhatsApp (escritas em nome do freelancer, na primeira pessoa):
 - Curtas (no máximo 5 linhas), naturais, sem cara de spam, sem emojis em excesso (no máximo 1).
@@ -117,18 +121,28 @@ export function fallbackContent(lead, settings) {
   const reason = lead.rating ? `vi que vocês têm nota ${String(lead.rating).replace('.', ',')} no Google${lead.reviewCount ? ` com ${lead.reviewCount} avaliações` : ''}, mas ainda não têm um site próprio` : 'vi o perfil de vocês no Google e notei que ainda não têm um site próprio';
   return {
     theme,
-    headline: `${lead.name}: atendimento de confiança${city ? ` em ${city}` : ''}`,
+    headline: `${lead.name}: informações e contato${city ? ` em ${city}` : ''}`,
     subheadline: `Conheça nossos serviços e fale com a gente direto pelo WhatsApp.${city ? ` Estamos em ${city}.` : ''}`,
     ctaLabel: 'Falar pelo WhatsApp',
     aboutTitle: `Sobre a ${lead.name}`,
-    about: `A ${lead.name} atende com cuidado e atenção a cada cliente. ${lead.rating ? `A nota ${lead.rating} no Google mostra a confiança de quem já foi atendido.` : ''} Entre em contato para tirar dúvidas e agendar.`,
+    about: `Conheça a ${lead.name} e entre em contato diretamente para confirmar os serviços disponíveis, horários e a melhor forma de atendimento.${city ? ` O negócio está em ${city}.` : ''}`,
     services: [
-      { title: 'Atendimento personalizado', description: 'Cada cliente recebe atenção individual, do primeiro contato até o resultado.' },
-      { title: 'Orçamento sem compromisso', description: 'Explique o que você precisa e receba uma proposta clara.' },
-      { title: 'Agendamento fácil', description: 'Marque seu horário em poucos minutos pelo WhatsApp.' },
-      { title: 'Equipe experiente', description: `Profissionais dedicados a ${cat}.` },
+      { title: `Soluções em ${cat}`, description: 'Converse com o negócio para conhecer as opções disponíveis.' },
+      { title: 'Informações pelo contato', description: 'Tire dúvidas diretamente pelo telefone ou WhatsApp informado.' },
+      { title: 'Horários e disponibilidade', description: 'Confirme os melhores dias e horários antes de visitar ou contratar.' },
+      { title: 'Orientação para o próximo passo', description: 'Explique o que você procura e receba as informações adequadas.' },
     ],
-    differentials: ['Bem avaliado no Google', 'Atendimento rápido pelo WhatsApp', 'Localização de fácil acesso'],
+    differentials: [
+      lead.rating ? `Nota ${String(lead.rating).replace('.', ',')} no Google` : 'Informações atualizadas neste canal',
+      lead.reviewCount ? `${lead.reviewCount} avaliações no Google` : 'Contato direto com o negócio',
+      city ? `Atendimento em ${city}` : 'Tire dúvidas antes de decidir',
+    ],
+    highlights: [
+      lead.rating ? 'Veja a avaliação pública antes de entrar em contato' : 'Conheça as opções diretamente com o negócio',
+      lead.phone ? 'Fale pelo canal de contato informado' : 'Consulte as informações disponíveis',
+      city ? `Encontre o negócio em ${city}` : 'Confirme os detalhes que importam para você',
+    ],
+    trustLine: lead.rating ? `Nota ${String(lead.rating).replace('.', ',')} no Google${lead.reviewCount ? ` · ${lead.reviewCount} avaliações` : ''}` : (city ? `Atendimento em ${city}` : 'Informações para facilitar seu contato'),
     faq: [
       { q: 'Como faço para agendar?', a: 'É só clicar no botão de WhatsApp e mandar uma mensagem. Respondemos o quanto antes.' },
       { q: 'Onde vocês ficam?', a: lead.address || 'Veja o mapa abaixo.' },
